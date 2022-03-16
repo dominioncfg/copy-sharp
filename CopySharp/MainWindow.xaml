@@ -1,0 +1,312 @@
+﻿<Window x:Class="CopySharp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CopySharp"
+        Title="Copy Sharp"        
+        Name="wMainWindow"
+        WindowStartupLocation="CenterScreen"
+        Width="500" ResizeMode="CanMinimize"
+        Foreground="White"
+        >
+
+    <Window.CommandBindings>
+        <CommandBinding Command="MediaCommands.Play" Executed="PlayCommand_Executed" CanExecute="PlayCommand_CanExecute"></CommandBinding>
+        <CommandBinding Command="MediaCommands.Pause" Executed="PauseCommand_Executed" CanExecute="PauseCommand_CanExecute"></CommandBinding>
+        <CommandBinding Command="MediaCommands.Stop" Executed="StopCommand_Executed" CanExecute="StopCommand_CanExecute"></CommandBinding>
+        <CommandBinding Command="ApplicationCommands.Delete" Executed="DeleteCommand_Executed" CanExecute="DeleteCommand_CanExecute"></CommandBinding>
+    </Window.CommandBindings>
+
+    <Window.Resources>
+        <ResourceDictionary Source="Theme/Blue.xaml"></ResourceDictionary>
+    </Window.Resources>
+
+
+
+
+
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="AllowsTransparency" Value="True"></Setter>
+            <Setter Property="WindowStyle" Value="None"></Setter>
+            <Setter Property="Background" Value="Transparent"></Setter>
+            <Setter Property="Template" Value="{StaticResource CustomWindowTemplate}"></Setter>
+            <Setter Property="SizeToContent" Value="Height"></Setter>
+        </Style>
+    </Window.Style>
+
+
+    <DockPanel Name="ContentPanel"  >
+        <StackPanel Name="BarsPanel" Margin="2" DockPanel.Dock="Top">
+            <StackPanel>
+                <ProgressBar Name="pbTotal" Margin="4" Height="50" FontSize="20" FontWeight="Bold" Value="{Binding Path=Progress}">
+
+                </ProgressBar>
+                <DockPanel LastChildFill="True">
+                    <TextBlock FontSize="12" Foreground="White" FontWeight="Bold" Margin="8,0" DockPanel.Dock="Right">
+                        <TextBlock.Text>
+                            <Binding Path="RemainingTime" >
+                                <Binding.Converter>
+                                    <local:TimeSpanConverter></local:TimeSpanConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Left" FontWeight="Bold" FontSize="12" Foreground="White" Margin="8,0">
+                        <TextBlock.Text>
+                            <Binding Path="Speed" >
+                                <Binding.Converter>
+                                    <local:SpeedConverter></local:SpeedConverter>
+                                </Binding.Converter>
+
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <ProgressBar Margin="4" Name="pbLocal" Height="30" Value="{Binding Path=Actual.Progress}" FontWeight="Bold" FontSize="15"/>
+                <DockPanel LastChildFill="True">
+                    <TextBlock FontSize="13" FontWeight="Bold" Foreground="White" Margin="8,0" DockPanel.Dock="Right">
+                        <TextBlock.Text>
+                            <Binding Path="Actual.RemainingTime" >
+                                <Binding.Converter>
+                                    <local:TimeSpanConverter></local:TimeSpanConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock FontWeight="Bold" FontSize="13" Foreground="White" Margin="8,0" Text="{Binding Path=Actual.FileFriendlyName}"></TextBlock>
+                </DockPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Top">
+            <Button Padding="4" Margin="4"  Command="MediaCommands.Play" Content="{Binding RelativeSource={RelativeSource Self}, Path=Command.Text}"/>
+
+
+            <Button Padding="4" Margin="4" Command="MediaCommands.Pause" Content="{Binding RelativeSource={RelativeSource Self}, Path=Command.Text}"></Button>
+            <Button Padding="4" Margin="4"  Command="MediaCommands.Stop" Content="{Binding RelativeSource={RelativeSource Self}, Path=Command.Text}"></Button>
+
+        </StackPanel>
+
+        <GroupBox Header="Copy" DockPanel.Dock="Top">
+            <StackPanel Orientation="Horizontal">
+
+                <Button Click="ChooseSourceBtn_Click" Padding="4"  Margin="2" >SourceFolder</Button>
+                <Button Click="ChooseDestinationBtn_Click" Padding="4"  Margin="2">Target Folder</Button>
+                <Button Click="StarToCopy_BtnClick" Padding="4" Margin="2">Start</Button>
+            </StackPanel>
+        </GroupBox >
+        <Expander IsExpanded="False" >
+            <Expander.Header>
+                <Label HorizontalAlignment="Right">
+                    Info
+                </Label>
+            </Expander.Header>
+            <StackPanel>
+                <StackPanel.Resources>
+                    <ContextMenu x:Key="FileContextMenu">
+                        <MenuItem Header="Subir" Click="btnUp_Click"></MenuItem>
+                        <MenuItem Header="Llevar al principio" Click="btnUpAll_Click"></MenuItem>
+                        <MenuItem Header="Bajar" Click="btnDown_Click"></MenuItem>
+                        <MenuItem Header="Llevar al final" Click="btnDownAll_Click"></MenuItem>
+                        <Separator></Separator>
+                        <MenuItem Command="Delete" CommandTarget="{Binding ElementName=lstFiles}" Header="Eliminar"></MenuItem>
+                    </ContextMenu>
+                </StackPanel.Resources>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90" >
+                        
+                        From:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="Actual.FromFolder">
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">To:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="Actual.DestinationFolder">
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Copiando:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="TotalLength">
+                                <Binding.Converter>
+                                    <local:LengthConverter></local:LengthConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Total:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="FilesCount">
+
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Copiado:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="BytesCopied">
+                                <Binding.Converter>
+                                    <local:LengthConverter></local:LengthConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Terminados:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="CopiedFiles">
+
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Fichero Actual:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="Actual.TotalLength">
+                                <Binding.Converter>
+                                    <local:LengthConverter></local:LengthConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Margin="2" Width="90">Copiado Actual:</TextBlock>
+                    <TextBlock Margin="2">
+                        <TextBlock.Text>
+                            <Binding Path="Actual.BytesCopied">
+                                <Binding.Converter>
+                                    <local:LengthConverter></local:LengthConverter>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+                <ListView Margin="5" Name="lstFiles" Height="200"  SelectionMode="Extended" Style="{StaticResource ResourceKey=FileListView}" 
+                          ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True">
+
+                    <ListView.View>
+                        <GridView ColumnHeaderContainerStyle="{StaticResource ColumnsHeaderStyle}">
+
+                            <GridViewColumn Width="250">
+                                <GridViewColumn.Header>
+
+                                    <Button Focusable="False" Click="SortByFileName_Click">
+                                        <Grid>
+                                            <!--aqui-->
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="11"  ></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <Polygon Margin="2" Points="0,0 6,6 0,12" Opacity="1" Fill="{StaticResource DefaultColumnGradient}">
+                                            </Polygon>
+
+
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">File Name</TextBlock>
+                                        </Grid>
+                                    </Button>
+                                </GridViewColumn.Header>
+
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock TextWrapping="Wrap" FontWeight="ExtraBold" Text="{Binding FileFriendlyName}"></TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Width="100">
+                                <GridViewColumn.Header>
+                                    <Button Focusable="False"  Click="SortBySize_Click">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="11"  ></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <Polygon Margin="2" Points="0,0 6,6 0,12" Opacity="1" Fill="{StaticResource DefaultColumnGradient}">
+                                            </Polygon>
+
+
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">Size</TextBlock>
+                                        </Grid>
+                                    </Button>
+                                </GridViewColumn.Header>
+
+                                <GridViewColumn.DisplayMemberBinding>
+                                    <Binding Path="TotalLength">
+                                        <Binding.Converter>
+                                            <local:LengthConverter></local:LengthConverter>
+                                        </Binding.Converter>
+                                    </Binding>
+                                </GridViewColumn.DisplayMemberBinding>
+                            </GridViewColumn>
+
+                            <GridViewColumn  Width="250" DisplayMemberBinding="{Binding FromFolder}">
+                                <GridViewColumn.Header>
+                                    <Button Focusable="False" Click="SortByFromFolder_Click">
+                                        <Grid >
+                                            <!--aqui-->
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="11"  ></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <Polygon Margin="2" Points="0,0 6,6 0,12" Opacity="1" Fill="{StaticResource DefaultColumnGradient}">
+                                            </Polygon>
+
+
+                                            <!--aqui-->
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">From</TextBlock>
+                                        </Grid>
+                                    </Button>
+
+
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                            <GridViewColumn Width="250"  DisplayMemberBinding="{Binding DestinationFolder}">
+                                <GridViewColumn.Header>
+                                    <Button Focusable="False" Click="SortByDestination_Click">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="11"  ></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <Polygon Margin="2" Points="0,0 6,6 0,12" Opacity="1" Fill="{StaticResource DefaultColumnGradient}">
+                                            </Polygon>
+
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">To</TextBlock>
+                                        </Grid>
+                                    </Button>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="ContextMenu" Value="{StaticResource FileContextMenu}">
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+
+            </StackPanel>
+        </Expander>
+    </DockPanel>
+</Window>
